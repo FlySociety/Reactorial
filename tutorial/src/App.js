@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import $ from 'jquery'; 
 var ReactDOM = require('react-dom');
 
 var App = React.createClass({
-    getInitialState: function(){
+    
+    getInitialState: function() {
         return {
             searchResults: []
         }
@@ -15,7 +17,7 @@ var App = React.createClass({
             searchResults: response.results
         })
     },
-
+    
     search: function(URL){
         $.ajax({
             type: "GET",
@@ -30,45 +32,57 @@ var App = React.createClass({
     render: function(){
         return (
             <div>
-                <SearchBox />
-                <Results />
+                <SearchBox search={this.search} />
+                <Results searchResults={this.state.searchResults} />
             </div>
         );
     },
 
-    componentDidMount(){
-        this.search('https://itunes.apple.com/search?term=fun');
-    }
+
 });
 
 var SearchBox = React.createClass({
+    
     render: function(){
         return (
             <div>
-                <input type="text" />
-                <select>
+                <input type="text" ref="query" />
+                <select ref="category">
                     <option value="software">Apps</option>
                     <option value="movie">Films</option>
                 </select>
-                <input type="submit" />
+                <input type="submit" onClick={this.createAjax} />
             </div>
         );
+    },
+
+    createAjax: function(){
+        var query    = ReactDOM.findDOMNode(this.refs.query).value;
+        var category = ReactDOM.findDOMNode(this.refs.category).value;
+        var URL      = 'https://itunes.apple.com/search?term=' + query +'&country=us&entity=' + category;
+        this.props.search(URL)
     }
+
 });
 
 var Results = React.createClass({
+    
     render: function(){
+        var resultItems = this.props.searchResults.map(function(result) {
+            return <ResultItem key={result.trackId} trackName={result.trackName} />
+        });
         return(
             <ul>
-                <ResultItem />
+                {resultItems}
             </ul>           
         );
     }
 });
 
 var ResultItem = React.createClass({
+    
     render: function(){
-        return <li>a search result item</li>;
+        return <li>{this.props.trackName}</li>;
     }
 });
 
